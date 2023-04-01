@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/google/uuid"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -14,6 +18,21 @@ import (
 
 type response struct {
 	Msg string `json:"msg"`
+}
+
+type Recording struct {
+	gorm.Model
+	ID        uuid.UUID `sql:"AUTO_INCREMENT" gorm:"type:uuid;primary_key;"`
+	CreatedAt time.Time
+}
+
+func setupPg() *gorm.DB {
+	dsn := "postgres://kesh:password@localhost:5432/postgres?sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsn))
+	if err != nil {
+		panic("failed to connect to db")
+	}
+	return db
 }
 
 func main() {
@@ -28,6 +47,9 @@ func main() {
 
 	client := s3.NewFromConfig(cfg)
 
+	db := setupPg()
+	db.AutoMigrate(&Recording{})
+
 	app.Get("/", func(c *fiber.Ctx) error {
 		resp := response{Msg: "connection test success"}
 		return c.JSON(resp)
@@ -36,16 +58,19 @@ func main() {
 	app.Post("/", func(c *fiber.Ctx) error {
 		blob := c.Body()
 		reader := bytes.NewReader(blob)
+
+		newRecording := Recording{ID: uuid.New(), CreatedAt: time.Now()}
+		db.Create(&newRecording)
+
 		putObjInput := &s3.PutObjectInput{
 			Bucket: aws.String("snakra-test"),
-			Key:    aws.String("anidnian"),
+			Key:    aws.String(newRecording.ID.String()),
 			Body:   reader,
 		}
-		putObjectOuput, err := client.PutObject(context.TODO(), putObjInput)
+		_, err := client.PutObject(context.TODO(), putObjInput)
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println(putObjectOuput)
 		return c.JSON(response{Msg: "recording received!"})
 	})
 
