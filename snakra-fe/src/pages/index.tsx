@@ -3,11 +3,12 @@ import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
 import { useState } from 'react'
-import { blob } from 'stream/consumers'
+import { useRouter } from 'next/router'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const router = useRouter()
   const recordingControls = useAudioRecorder()
   const [recording, setRecording] = useState(false)
 
@@ -16,8 +17,8 @@ export default function Home() {
       method: "POST",
       body: blob
     })
-    const json = await respon.json()
-    alert(json.msg)
+    const { id } = await respon.json()
+    return id
   }
 
   return (
@@ -29,12 +30,11 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <button onClick={async () => {
-          const resp = await fetch("http://localhost:3001/")
-          const json = await resp.json()
-          console.log(json.msg)
-        }}>test go server</button>
-        <AudioRecorder onRecordingComplete={(blob) => sendToServer(blob)} recorderControls={recordingControls} />
+        <AudioRecorder onRecordingComplete={async (blob) => {
+          const id = await sendToServer(blob)
+          router.replace(`/${id}`)
+        }}
+          recorderControls={recordingControls} />
       </main>
     </>
   )

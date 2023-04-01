@@ -17,7 +17,7 @@ import (
 )
 
 type response struct {
-	Msg string `json:"msg"`
+	Id string `json:"id"`
 }
 
 type Recording struct {
@@ -50,9 +50,17 @@ func main() {
 	db := setupPg()
 	db.AutoMigrate(&Recording{})
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		resp := response{Msg: "connection test success"}
-		return c.JSON(resp)
+	app.Get("/:id", func(c *fiber.Ctx) error {
+		fmt.Println(c.Params("id"))
+		getObjInput := s3.GetObjectInput{
+			Bucket: aws.String("snakra-test"),
+			Key:    aws.String(c.Params("id")),
+		}
+		output, err := client.GetObject(context.TODO(), &getObjInput)
+		if err != nil {
+			panic(err)
+		}
+		return c.SendStream(output.Body)
 	})
 
 	app.Post("/", func(c *fiber.Ctx) error {
@@ -71,7 +79,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		return c.JSON(response{Msg: "recording received!"})
+		fmt.Printf("from post: %s", newRecording.ID.String())
+		return c.JSON(response{Id: newRecording.ID.String()})
 	})
 
 	app.Listen(":3001")
