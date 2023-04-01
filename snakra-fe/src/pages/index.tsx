@@ -12,10 +12,12 @@ export default function Home() {
   const [recording, setRecording] = useState(false)
 
   const sendToServer = async (blob: Blob) => {
-    await fetch("http://localhost:3001/", {
+    const respon = await fetch("http://localhost:3001/", {
       method: "POST",
       body: blob
     })
+    const json = await respon.json()
+    alert(json.msg)
   }
 
   return (
@@ -32,7 +34,6 @@ export default function Home() {
           const json = await resp.json()
           console.log(json.msg)
         }}>test go server</button>
-        {/*recording ? <button onClick={() => stopRecording()}>Stop</button> : <button onClick={() => startRecording()}>Record</button>*/}
         <AudioRecorder onRecordingComplete={(blob) => sendToServer(blob)} recorderControls={recordingControls} />
       </main>
     </>
