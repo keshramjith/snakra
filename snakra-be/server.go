@@ -35,23 +35,26 @@ func setupPg() *gorm.DB {
 	return db
 }
 
-func main() {
-	app := fiber.New()
-	app.Use(cors.New())
-
-	// aws s3 setup
+func setupS3() *s3.Client {
+	// loads profile and credentials from ~/.aws
 	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile("default"))
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	client := s3.NewFromConfig(cfg)
+	return client
+}
+
+func main() {
+	app := fiber.New()
+	app.Use(cors.New())
+
+	client := setupS3()
 
 	db := setupPg()
 	db.AutoMigrate(&Recording{})
 
 	app.Get("/:id", func(c *fiber.Ctx) error {
-		fmt.Println(c.Params("id"))
 		getObjInput := s3.GetObjectInput{
 			Bucket: aws.String("snakra-test"),
 			Key:    aws.String(c.Params("id")),
@@ -79,7 +82,6 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Printf("from post: %s", newRecording.ID.String())
 		return c.JSON(response{Id: newRecording.ID.String()})
 	})
 

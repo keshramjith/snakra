@@ -20,8 +20,9 @@ const ListenPage = () => {
               };
             addAudioElement(blobR)
         }
+        if (!router.isReady) return
         getBlob()
-    }, [])
+    }, [router.isReady, router.query.id])
 
     return (
         <>
