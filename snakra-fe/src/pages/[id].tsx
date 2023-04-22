@@ -1,31 +1,35 @@
 import { Blob } from "buffer"
-import { Router, useRouter } from "next/router"
-import "react"
-import { useEffect, useState } from "react"
+import { useRouter } from "next/router"
+import { useEffect, useRef } from "react"
 
 const ListenPage = () => {
     const router = useRouter()
     const { id } = router.query
-    const [haveAudio, setHaveAudio] = useState(false)
+    const audioElement = useRef(null)
     useEffect(() => {
+        if (!router.isReady) {
+            console.log("nothing should happen")
+            return
+        }
         const getBlob = async () => {
             const resp = await fetch(`http://localhost:3001/${id}`)
             const blobR = await resp.blob()
-            const addAudioElement = (blob) => {
+            const addAudioElement = (blob: Blob) => {
                 const url = URL.createObjectURL(blob);
-                const audio = document.createElement("audio");
-                audio.src = url;
-                audio.controls = true;
-                document.body.appendChild(audio);
+                const { current } = audioElement
+                if (current) {
+                    current.src = url
+                    current.controls = true
+                }
               };
             addAudioElement(blobR)
         }
-        if (!router.isReady) return
         getBlob()
     }, [router.isReady, router.query.id])
 
     return (
         <>
+            <audio ref={audioElement} />
         </>
     )
 }
