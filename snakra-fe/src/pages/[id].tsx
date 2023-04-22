@@ -12,7 +12,7 @@ const ListenPage = () => {
             return
         }
         const getBlob = async () => {
-            const resp = await fetch(`http://localhost:3001/${id}`)
+            const resp = await fetch(`http://localhost:3333/${id}`)
             const blobR = await resp.blob()
             const addAudioElement = (blob: Blob) => {
                 const url = URL.createObjectURL(blob);

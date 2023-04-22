@@ -13,7 +13,7 @@ export default function Home() {
   const [recording, setRecording] = useState(false)
 
   const sendToServer = async (blob: Blob) => {
-    const respon = await fetch("http://localhost:3001/", {
+    const respon = await fetch("http://localhost:3333/", {
       method: "POST",
       body: blob
     })
