@@ -2,7 +2,7 @@ import Head from 'next/head'
 import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder'
 import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -10,7 +10,30 @@ const inter = Inter({ subsets: ['latin'] })
 export default function Home() {
   const router = useRouter()
   const recordingControls = useAudioRecorder()
+  const { isRecording } = recordingControls
   const [recording, setRecording] = useState(false)
+  const [countdown, setCountdown] = useState(15)
+
+  useEffect(() => {
+    if (isRecording) {
+        const interval = setInterval(() => setCountdown(countdown - 1), 1000)
+        return () => clearInterval(interval)
+      }
+    }, [isRecording, countdown])
+
+  useEffect(() => {
+    if (countdown !== 0) {
+        return
+      }
+    const { stopRecording ,recordingBlob } = recordingControls
+    stopRecording()
+    onRecordingComplete(recordingBlob)
+    }, [countdown])
+
+  const onRecordingComplete = async (blob) => {
+      const id = await sendToServer(blob)
+      router.replace(`/${id}`)
+    }
 
   const sendToServer = async (blob: Blob) => {
     const respon = await fetch("http://localhost:3333/", {
@@ -30,10 +53,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <main className={styles.main}>
-        <AudioRecorder onRecordingComplete={async (blob) => {
-          const id = await sendToServer(blob)
-          router.replace(`/${id}`)
-        }}
+        <AudioRecorder onRecordingComplete={(blob) => onRecordingComplete(blob)}
           recorderControls={recordingControls} />
       </main>
     </>
