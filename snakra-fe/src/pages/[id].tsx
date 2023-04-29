@@ -1,4 +1,3 @@
-import { Blob } from "buffer"
 import { useRouter } from "next/router"
 import { useEffect, useRef } from "react"
 
@@ -8,12 +7,12 @@ const ListenPage = () => {
     const audioElement = useRef(null)
     useEffect(() => {
         if (!router.isReady) {
-            console.log("nothing should happen")
             return
         }
         const getBlob = async () => {
-            const resp = await fetch(`http://localhost:3333/${id}`)
-            const blobR = await resp.blob()
+            const resp = await fetch(`http://localhost:8080/api/${id}`)
+            const { audio } = await resp.json()
+            const blob = new Blob([Buffer.from(audio, "base64")], { type: "audio/webm;codecs=opus;base64"})
             const addAudioElement = (blob: Blob) => {
                 const url = URL.createObjectURL(blob);
                 const { current } = audioElement
@@ -22,7 +21,7 @@ const ListenPage = () => {
                     current.controls = true
                 }
               };
-            addAudioElement(blobR)
+            addAudioElement(blob)
         }
         getBlob()
     }, [router.isReady, router.query.id])
