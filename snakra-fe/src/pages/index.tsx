@@ -1,11 +1,8 @@
 import Head from 'next/head'
 import { AudioRecorder, useAudioRecorder } from 'react-audio-voice-recorder'
-import { Inter } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
-
-const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
   const router = useRouter()
@@ -13,6 +10,7 @@ export default function Home() {
   const { isRecording } = recordingControls
   const [recording, setRecording] = useState(false)
   const [countdown, setCountdown] = useState(15)
+  const [id, setId] = useState<string | null>(null)
 
   useEffect(() => {
     if (isRecording) {
@@ -22,26 +20,37 @@ export default function Home() {
     }, [isRecording, countdown])
 
   useEffect(() => {
+    if (id) {
+      router.replace(`${id}`)
+    }
+  }, [id, router])
+
+  useEffect(() => {
     if (countdown !== 0) {
         return
       }
     const { stopRecording ,recordingBlob } = recordingControls
     stopRecording()
-    onRecordingComplete(recordingBlob)
+    if (recordingBlob) onRecordingComplete(recordingBlob)
     }, [countdown])
 
-  const onRecordingComplete = async (blob) => {
-      const id = await sendToServer(blob)
-      router.replace(`/${id}`)
+  const onRecordingComplete = async (blob: Blob) => {
+    if (blob) convertToBase64String(blob)
     }
 
-  const sendToServer = async (blob: Blob) => {
-    const respon = await fetch("http://localhost:3333/", {
-      method: "POST",
-      body: blob
-    })
-    const { id } = await respon.json()
-    return id
+  const convertToBase64String = (blob: Blob) => {
+    const reader = new FileReader()
+    var base64data
+    reader.readAsDataURL(blob)
+    reader.onloadend = async () => {
+      base64data = reader.result
+      const respon = await fetch("http://localhost:8080/api", {
+        method: "POST",
+        body: base64data
+      })
+      const { id } = await respon.json()
+      setId(id)
+    }
   }
 
   return (
