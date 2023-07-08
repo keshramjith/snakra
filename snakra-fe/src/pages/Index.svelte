@@ -32,12 +32,23 @@
         recorder.stop()
     }
 
-    const upload = (blob: Blob) => {
+    const upload = async (blob: Blob) => {
         const reader = new FileReader()
         reader.readAsDataURL(blob)
-        reader.onloadend = () => {
+        reader.onloadend = async () => {
             const b64str = reader.result.split(',')[1]
-            console.log("uploading: ", b64str)
+            const reqBody = {
+                vnString: b64str,
+                expiryOption: {
+                    type: 1
+                }
+            }
+            const resp = await fetch("http://localhost:3001/vn", {
+                method: "POST",
+                body: JSON.stringify(reqBody)
+            })
+            const json = await resp.json()
+            console.log(json.message)
         }
     }
 
