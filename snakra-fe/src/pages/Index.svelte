@@ -3,11 +3,8 @@
     let micAccess = false
     let chunks = []
     let blob = null
-    let blobBase64
     let recorder
     let audioSrc
-
-    let sendingToServer = false
 
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         recorder = new MediaRecorder(stream)
