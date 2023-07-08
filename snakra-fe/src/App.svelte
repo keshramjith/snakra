@@ -1,9 +1,7 @@
 <script lang="ts">
+import Index from "./pages/Index.svelte";
 </script>
 
 <main>
-  <div>
-    <button>Sign up</button>
-    <button>Login</button>
-  </div>
+  <Index />
 </main>
