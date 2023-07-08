@@ -1,38 +1,29 @@
 package main
 
 import (
-	"context"
-	"fmt"
+	"flag"
 	"log"
 	"os"
 
 	"github.com/keshramjith/snakra/internal/server"
-
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-type response struct {
-	Id string `json:"id"`
-}
-
-func setupS3() *s3.Client {
-	// loads profile and credentials from ~/.aws
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile("default"))
-	if err != nil {
-		fmt.Println(err)
-	}
-	client := s3.NewFromConfig(cfg)
-	return client
+type config struct {
+	port int
+	env  string
 }
 
 func main() {
+	var cfg config
+
+	flag.IntVar(&cfg.port, "port", 3001, "API server port")
+	flag.StringVar(&cfg.env, "env", "dev", "Environment (dev|staging|prod)")
 
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 
 	srv := server.NewServer()
-	infoLog.Printf("Starting server on %s", srv.Addr)
+	infoLog.Printf("Starting server on %s", cfg.port)
 	err := srv.ListenAndServe()
 	errorLog.Fatal(err)
 
