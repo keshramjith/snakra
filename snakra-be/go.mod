@@ -1,4 +1,4 @@
-module snakra-be
+module github.com/keshramjith/snakra
 
 go 1.20
 
