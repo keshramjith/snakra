@@ -4,6 +4,11 @@ import (
 	"net/http"
 )
 
+const (
+	Timed     = 0
+	ViewCount = 1
+)
+
 func HandleVoicenoteRead(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("voice note for specified id"))
 }
