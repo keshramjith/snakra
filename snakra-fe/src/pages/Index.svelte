@@ -36,14 +36,11 @@
         const reader = new FileReader()
         reader.readAsDataURL(blob)
         reader.onloadend = async () => {
-            const b64str = reader.result.split(',')[1]
+            const b64str = reader.result.split(",")[1]
             const reqBody = {
-                vnString: b64str,
-                expiryOption: {
-                    type: 1
-                }
+                vnString: b64str
             }
-            const resp = await fetch("http://localhost:3001/vn", {
+            const resp = await fetch("http://localhost:3001/api/v1/vn", {
                 method: "POST",
                 body: JSON.stringify(reqBody)
             })

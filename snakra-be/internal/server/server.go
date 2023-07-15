@@ -2,31 +2,36 @@ package server
 
 import (
 	"github.com/go-chi/cors"
+	"github.com/keshramjith/snakra/internal/dbconfig"
+	"github.com/scylladb/gocqlx/v2"
 	"log"
 	"net/http"
 
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-chi/chi/v5"
-	s3config "github.com/keshramjith/snakra/internal/s3config"
+	"github.com/keshramjith/snakra/internal/s3config"
 )
 
 type Server struct {
 	router      *chi.Mux
-	driver      *http.Server
-	s3client    *s3.Client
+	db          *gocqlx.Session
+	s3client    *s3config.S3Client
 	infoLogger  *log.Logger
 	errorLogger *log.Logger
+	driver      *http.Server
 }
 
-func NewServer() *Server {
+func NewServer(infoLogger, errorLogger *log.Logger, s3bn, addr string) *Server {
 	mux := newMux()
-	s3Client := s3config.NewS3Client()
-	addr := ":3001"
+	db := dbconfig.NewDbConn()
+	s3Client := s3config.NewS3Client(s3bn)
 	drvSrv := &http.Server{Addr: addr, Handler: mux}
 	srv := &Server{
-		router:   mux,
-		s3client: s3Client,
-		driver:   drvSrv,
+		router:      mux,
+		db:          db,
+		s3client:    s3Client,
+		driver:      drvSrv,
+		infoLogger:  infoLogger,
+		errorLogger: errorLogger,
 	}
 	srv.registerRoutes()
 	return srv

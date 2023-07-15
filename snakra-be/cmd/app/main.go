@@ -1,29 +1,34 @@
 package main
 
 import (
-	"flag"
+	"context"
+	"fmt"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 
 	"github.com/keshramjith/snakra/internal/server"
 )
 
-type config struct {
-	port int
-	env  string
+func enrichContext(ctx context.Context, key, val string) context.Context {
+	return context.WithValue(ctx, key, val)
 }
 
 func main() {
-	var cfg config
-
-	flag.IntVar(&cfg.port, "port", 3001, "API server port")
-	flag.StringVar(&cfg.env, "env", "dev", "Environment (dev|staging|prod)")
+	envErr := godotenv.Load(".env")
+	if envErr != nil {
+		fmt.Println("Failed to find .env file")
+		os.Exit(1)
+	}
+	port := os.Getenv("PORT")
+	// env := os.Getenv("ENV")
+	s3bucketName := os.Getenv("S3_BUCKET")
 
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 
-	srv := server.NewServer()
-	infoLog.Printf("Starting server on %s", cfg.port)
+	srv := server.NewServer(infoLog, errorLog, s3bucketName, port)
+	infoLog.Printf("Starting server on %s\n", port)
 	err := srv.ListenAndServe()
 	errorLog.Fatal(err)
 
