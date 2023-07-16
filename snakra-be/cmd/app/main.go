@@ -1,18 +1,14 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
+
 	"github.com/keshramjith/snakra/internal/server"
 )
-
-func enrichContext(ctx context.Context, key, val string) context.Context {
-	return context.WithValue(ctx, key, val)
-}
 
 func main() {
 	envErr := godotenv.Load(".env")
@@ -30,7 +26,7 @@ func main() {
 	srv := server.NewServer(infoLog, errorLog, s3bucketName, port)
 	infoLog.Printf("Starting server on %s\n", port)
 	err := srv.ListenAndServe()
-	defer srv.Close()
+	defer srv.CloseDb()
 	errorLog.Fatal(err)
 
 	// client := setupS3()

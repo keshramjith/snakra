@@ -7,14 +7,13 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/keshramjith/snakra/internal/dbservice"
 	"github.com/keshramjith/snakra/internal/s3service"
-	"github.com/scylladb/gocqlx/v2"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type Server struct {
 	router      *chi.Mux
-	db          *gocqlx.Session
+	db          *dbservice.DbService
 	s3client    *s3service.S3Client
 	infoLogger  *log.Logger
 	errorLogger *log.Logger
@@ -42,8 +41,8 @@ func (s *Server) ListenAndServe() error {
 	return s.driver.ListenAndServe()
 }
 
-func (s *Server) Close() {
-	s.db.Close()
+func (s *Server) CloseDb() {
+	s.db.CloseDb()
 }
 
 func newMux() *chi.Mux {

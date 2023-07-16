@@ -4,6 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
+
+	"github.com/gocql/gocql"
+	"github.com/keshramjith/snakra/internal/dbservice"
 )
 
 const (
@@ -12,7 +16,7 @@ const (
 )
 
 type response struct {
-	Message string `json:"message"`
+	Id string `json:"id"`
 }
 
 type post_request_body struct {
@@ -26,10 +30,25 @@ func (s *Server) HandleVoicenoteCreate(w http.ResponseWriter, r *http.Request) {
 		s.errorLogger.Println("failed to unmarshal request object")
 		return
 	}
-	// s.s3client.AddObject("cat", "suidhawiud")
-	// s.db.Session.
+	created_at := time.Now()
+	id, err := gocql.RandomUUID()
+	if err != nil {
+		s.errorLogger.Fatalf("failed to generated UUID: %s\n", err)
+	}
+	vnEntry := &dbservice.Voicenote{
+		Id:         id,
+		Created_at: created_at.Sub(created_at),
+	}
+
+	s3err := s.s3client.AddObject(requestBody.VnString, vnEntry.Id.String())
+	if s3err != nil {
+		s.errorLogger.Printf("S3 error: %s\n", s3err)
+	}
+
+	s.db.InsertVoicenote(vnEntry)
+
 	w.Header().Set("Content-Type", "application/json")
-	js, err := json.Marshal(&response{Message: requestBody.VnString})
+	js, err := json.Marshal(&response{Id: vnEntry.Id.String()})
 	if err != nil {
 		fmt.Print("Error")
 	}
