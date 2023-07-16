@@ -30,6 +30,7 @@ func main() {
 	srv := server.NewServer(infoLog, errorLog, s3bucketName, port)
 	infoLog.Printf("Starting server on %s\n", port)
 	err := srv.ListenAndServe()
+	defer srv.Close()
 	errorLog.Fatal(err)
 
 	// client := setupS3()

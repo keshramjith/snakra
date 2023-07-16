@@ -1,4 +1,4 @@
-package dbconfig
+package dbservice
 
 import (
 	"fmt"

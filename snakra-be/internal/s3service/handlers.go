@@ -1,4 +1,4 @@
-package s3config
+package s3service
 
 import "fmt"
 

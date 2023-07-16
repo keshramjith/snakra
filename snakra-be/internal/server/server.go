@@ -1,20 +1,21 @@
 package server
 
 import (
-	"github.com/go-chi/cors"
-	"github.com/keshramjith/snakra/internal/dbconfig"
-	"github.com/scylladb/gocqlx/v2"
 	"log"
 	"net/http"
 
+	"github.com/go-chi/cors"
+	"github.com/keshramjith/snakra/internal/dbservice"
+	"github.com/keshramjith/snakra/internal/s3service"
+	"github.com/scylladb/gocqlx/v2"
+
 	"github.com/go-chi/chi/v5"
-	"github.com/keshramjith/snakra/internal/s3config"
 )
 
 type Server struct {
 	router      *chi.Mux
 	db          *gocqlx.Session
-	s3client    *s3config.S3Client
+	s3client    *s3service.S3Client
 	infoLogger  *log.Logger
 	errorLogger *log.Logger
 	driver      *http.Server
@@ -22,8 +23,8 @@ type Server struct {
 
 func NewServer(infoLogger, errorLogger *log.Logger, s3bn, addr string) *Server {
 	mux := newMux()
-	db := dbconfig.NewDbConn()
-	s3Client := s3config.NewS3Client(s3bn)
+	db := dbservice.NewDbConn()
+	s3Client := s3service.NewS3Client(s3bn)
 	drvSrv := &http.Server{Addr: addr, Handler: mux}
 	srv := &Server{
 		router:      mux,
@@ -39,6 +40,10 @@ func NewServer(infoLogger, errorLogger *log.Logger, s3bn, addr string) *Server {
 
 func (s *Server) ListenAndServe() error {
 	return s.driver.ListenAndServe()
+}
+
+func (s *Server) Close() {
+	s.db.Close()
 }
 
 func newMux() *chi.Mux {
