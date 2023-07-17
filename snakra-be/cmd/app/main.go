@@ -28,40 +28,4 @@ func main() {
 	err := srv.ListenAndServe()
 	defer srv.CloseDb()
 	errorLog.Fatal(err)
-
-	// client := setupS3()
-
-	// 	app.Get("/{id}", func(w http.ResponseWriter, r *http.Request) {
-	// 		getObjInput := s3.GetObjectInput{
-	// 			Bucket: aws.String("snakra-test"),
-	// 			Key:    aws.String(chi.URLParam(r, "id")),
-	// 		}
-	// 		output, err := client.GetObject(context.TODO(), &getObjInput)
-	// 		if err != nil {
-	// 			panic(err)
-	// 		}
-	// 		data, err := io.ReadAll(output.Body)
-	// 		if err != nil {
-	// 			fmt.Println(err)
-	// 		}
-	// 		w.Write(data)
-	// 	})
-
-	// app.Post("/", func(w http.ResponseWriter, r *http.Request) {
-
-	// putObjInput := &s3.PutObjectInput{
-	// 	Bucket: aws.String("snakra-test"),
-	// 	Key:    aws.String(newRecording.ID.String()),
-	// 	Body:   reader,
-	// }
-	// 	_, err = client.PutObject(context.TODO(), putObjInput)
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-
-	// 	data := &response{Id: newRecording.ID.String()}
-	// 		render.JSON(w, r, "post audio endpoint")
-	// 	})
-
-	// http.ListenAndServe(":3333", app)
 }

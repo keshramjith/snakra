@@ -3,6 +3,7 @@ package s3service
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -29,7 +30,11 @@ func (c *S3Client) RemoveObject(key string) error {
 	return nil
 }
 
-func (c *S3Client) GetObject(key string) error {
-	fmt.Printf("Get object from s3 bucket")
-	return nil
+func (c *S3Client) GetObject(key string) io.Reader {
+	getObjectInput := &s3.GetObjectInput{Bucket: aws.String(c.sbn), Key: aws.String(key)}
+	output, err := c.c.GetObject(context.TODO(), getObjectInput)
+	if err != nil {
+		panic(err)
+	}
+	return output.Body
 }

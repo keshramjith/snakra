@@ -2,20 +2,11 @@ package dbservice
 
 import (
 	"fmt"
-	"os"
-	"time"
-
 	"github.com/gocql/gocql"
 	"github.com/scylladb/gocqlx/v2"
-	"github.com/scylladb/gocqlx/v2/qb"
 	"github.com/scylladb/gocqlx/v2/table"
+	"os"
 )
-
-type Voicenote struct {
-	Id         gocql.UUID
-	S3_key     string
-	Created_at time.Time
-}
 
 type DbService struct {
 	session *gocqlx.Session
@@ -32,7 +23,7 @@ func NewDbConn() *DbService {
 	}
 
 	var voicenoteMetadata = table.Metadata{
-		Name:    "voicenotes",
+		Name:    "testdb.voicenotes",
 		Columns: []string{"id", "s3_key", "created_at"},
 		PartKey: []string{"id"},
 	}
@@ -43,10 +34,18 @@ func NewDbConn() *DbService {
 }
 
 func (dbs *DbService) InsertVoicenote(vn *Voicenote) {
-	insertQ := qb.Insert(fmt.Sprintf(`%s.voicenotes`, "testdb")).Columns("id", "s3_key", "created_at").Query(*dbs.session)
+	insertQ := dbs.session.Query(vnTable.Insert()).BindStruct(vn)
 	insertQ.BindStruct(vn)
 	if err := insertQ.ExecRelease(); err != nil {
 		fmt.Printf("Error inserting in db: %s\n", err)
+		os.Exit(1)
+	}
+}
+
+func (dbs *DbService) GetVoicenote(vn *Voicenote) {
+	getQ := dbs.session.Query(vnTable.Get()).BindStruct(vn)
+	if err := getQ.GetRelease(vn); err != nil {
+		fmt.Printf("Error getting from db: %s\n", err)
 		os.Exit(1)
 	}
 }
