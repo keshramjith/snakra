@@ -14,7 +14,7 @@ import (
 type Voicenote struct {
 	Id         gocql.UUID
 	S3_key     string
-	Created_at time.Duration
+	Created_at time.Time
 }
 
 type DbService struct {

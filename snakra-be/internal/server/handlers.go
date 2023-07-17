@@ -30,14 +30,15 @@ func (s *Server) HandleVoicenoteCreate(w http.ResponseWriter, r *http.Request) {
 		s.errorLogger.Println("failed to unmarshal request object")
 		return
 	}
-	created_at := time.Now()
+
 	id, err := gocql.RandomUUID()
 	if err != nil {
 		s.errorLogger.Fatalf("failed to generated UUID: %s\n", err)
 	}
 	vnEntry := &dbservice.Voicenote{
 		Id:         id,
-		Created_at: created_at.Sub(created_at),
+		S3_key:     id.String(),
+		Created_at: time.Now(),
 	}
 
 	s3err := s.s3client.AddObject(requestBody.VnString, vnEntry.Id.String())
