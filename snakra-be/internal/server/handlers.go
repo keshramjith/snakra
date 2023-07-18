@@ -67,7 +67,8 @@ func (s *Server) HandleVoicenoteRead(w http.ResponseWriter, r *http.Request) {
 
 	id, err := gocql.ParseUUID(pathId)
 	if err != nil {
-		s.errorLogger.Fatalf("Failed to parse uuid from client")
+		s.errorLogger.Println("Failed to parse uuid from client")
+		w.WriteHeader(404)
 		return
 	}
 	fetchedVoicenote := &dbservice.Voicenote{Id: id}
@@ -75,7 +76,6 @@ func (s *Server) HandleVoicenoteRead(w http.ResponseWriter, r *http.Request) {
 
 	if fetchedVoicenote.S3_key == "" {
 		w.WriteHeader(404)
-		w.Write([]byte(`{ "message": "Voicenote not found!" }`))
 		return
 	}
 
