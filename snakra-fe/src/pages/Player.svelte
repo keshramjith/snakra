@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import NotFound from "./NotFound.svelte";
+  import { navigate } from "svelte-navigator";
 
   const convertURIToBinary = (dataURI) => {
     let BASE64_MARKER = ';base64,';
@@ -23,12 +22,16 @@
     export let id;
     const getVn = async (id: string) => {
         const response = await fetch (`http://localhost:3001/api/v1/vn/${id}`)
-        const json = await response.json()
-        return json.audio
+        if (response.status == 200) {
+            const json = await response.json()
+            return json.audio
+        }
+        if (response.status == 404) {
+            navigate("/notfound", { replace: true })
+        }
     }
 </script>
 
 {#await getVn(id) then data }
     <audio src="{setAudio(convertURIToBinary(data))}" controls/>
 {/await}
-<p>id: {id}</p>

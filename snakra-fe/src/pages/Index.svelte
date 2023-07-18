@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { navigate } from "svelte-navigator"
     let isRecording = false
     let micAccess = false
     let chunks = []
@@ -45,7 +46,7 @@
                 body: JSON.stringify(reqBody)
             })
             const json = await resp.json()
-            console.log(json.message)
+            navigate(`/${json.id}`)
         }
     }
 

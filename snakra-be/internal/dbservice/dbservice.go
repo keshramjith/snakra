@@ -46,7 +46,6 @@ func (dbs *DbService) GetVoicenote(vn *Voicenote) {
 	getQ := dbs.session.Query(vnTable.Get()).BindStruct(vn)
 	if err := getQ.GetRelease(vn); err != nil {
 		fmt.Printf("Error getting from db: %s\n", err)
-		os.Exit(1)
 	}
 }
 

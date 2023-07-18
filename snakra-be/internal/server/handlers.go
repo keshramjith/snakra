@@ -73,6 +73,12 @@ func (s *Server) HandleVoicenoteRead(w http.ResponseWriter, r *http.Request) {
 	fetchedVoicenote := &dbservice.Voicenote{Id: id}
 	s.db.GetVoicenote(fetchedVoicenote)
 
+	if fetchedVoicenote.S3_key == "" {
+		w.WriteHeader(404)
+		w.Write([]byte(`{ "message": "Voicenote not found!" }`))
+		return
+	}
+
 	s3obj := s.s3client.GetObject(fetchedVoicenote.S3_key)
 
 	audio, err := io.ReadAll(s3obj)
