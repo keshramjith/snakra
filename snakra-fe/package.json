@@ -19,6 +19,7 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
-    "@auth0/auth0-spa-js": "^2.0.8"
+    "@auth0/auth0-spa-js": "^2.0.8",
+    "svelte-navigator": "^3.2.2"
   }
 }

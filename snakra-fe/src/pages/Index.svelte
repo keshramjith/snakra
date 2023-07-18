@@ -36,7 +36,7 @@
         const reader = new FileReader()
         reader.readAsDataURL(blob)
         reader.onloadend = async () => {
-            const b64str = reader.result.split(",")[1]
+            const b64str = reader.result
             const reqBody = {
                 vnString: b64str
             }

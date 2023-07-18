@@ -51,5 +51,6 @@ func (dbs *DbService) GetVoicenote(vn *Voicenote) {
 }
 
 func (db *DbService) CloseDb() {
+	fmt.Println("Closing db connection...")
 	db.session.Close()
 }
