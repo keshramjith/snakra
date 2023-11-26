@@ -1,5 +1,6 @@
 <script lang="ts">
     import { navigate } from "svelte-navigator"
+    import Icon from "@iconify/svelte"
     let isRecording = false
     let micAccess = false
     let chunks = []
@@ -64,14 +65,22 @@
 <div>
     {#if micAccess}
         {#if isRecording}
+            <div>
+                <p>Recording</p>
+                <Icon icon="ph:record-fill" width=35 color='red' />
+            </div>
             <button on:click={e => stopRecordingHandler(e)}>Stop</button>
         {:else}
             {#if blob}
                 <audio src={ audioSrc } controls />
-                <button on:click={e => shareButtonHandler(e)}>Make shareable</button>
-                <button on:click={e => resetHandler(e)}>Reset</button>
+                <div>
+                    <button on:click={e => shareButtonHandler(e)}>Make shareable</button>
+                    <button on:click={e => resetHandler(e)}>Reset</button>
+                </div>
             {:else}
-                <button on:click={e => startRecordingHandler(e)}>Record</button>
+                <button on:click={e => startRecordingHandler(e)}>
+                    <Icon icon="ph:record-fill" width=35 />
+                </button>
             {/if}
         {/if}
     {:else}
