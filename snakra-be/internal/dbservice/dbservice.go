@@ -1,55 +1,51 @@
 package dbservice
 
 import (
+	"context"
 	"fmt"
-	"github.com/gocql/gocql"
-	"github.com/scylladb/gocqlx/v2"
-	"github.com/scylladb/gocqlx/v2/table"
 	"os"
+
+	pgxuuid "github.com/jackc/pgx-gofrs-uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 type DbService struct {
-	session *gocqlx.Session
+	conn *pgx.Conn
 }
 
-var vnTable *table.Table
-
 func NewDbConn() *DbService {
-	cluster := gocql.NewCluster("localhost:9042")
-	session, err := gocqlx.WrapSession(cluster.CreateSession())
+	conn, err := pgx.Connect(context.Background(), os.Getenv("DB_HOST"))
 	if err != nil {
 		fmt.Printf("Error connecting to dbconfig: %s", err)
 		os.Exit(1)
 	}
+	pgxuuid.Register(conn.TypeMap())
 
-	var voicenoteMetadata = table.Metadata{
-		Name:    "testdb.voicenotes",
-		Columns: []string{"id", "s3_key", "created_at"},
-		PartKey: []string{"id"},
-	}
-
-	vnTable = table.New(voicenoteMetadata)
-
-	return &DbService{session: &session}
+	return &DbService{conn: conn}
 }
 
-func (dbs *DbService) InsertVoicenote(vn *Voicenote) {
-	insertQ := dbs.session.Query(vnTable.Insert()).BindStruct(vn)
-	insertQ.BindStruct(vn)
-	if err := insertQ.ExecRelease(); err != nil {
-		fmt.Printf("Error inserting in db: %s\n", err)
-		os.Exit(1)
+func (dbs *DbService) InsertVoicenote(vn *Voicenote) error {
+	args := pgx.NamedArgs{
+		"id":         vn.Id.String(),
+		"s3_key":     vn.S3_key,
+		"created_at": vn.Created_at,
 	}
+	_, err := dbs.conn.Exec(context.Background(), `INSERT INTO voicenotes (id, s3_key, created_at) VALUES (@id, @s3_key, @created_at)`, args)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func (dbs *DbService) GetVoicenote(vn *Voicenote) {
-	getQ := dbs.session.Query(vnTable.Get()).BindStruct(vn)
-	if err := getQ.GetRelease(vn); err != nil {
-		fmt.Printf("Error getting from db: %s\n", err)
+func (dbs *DbService) GetVoicenote(vn *Voicenote) error {
+	err := dbs.conn.QueryRow(context.Background(), `SELECT * FROM voicenotes WHERE id = @id`, pgx.NamedArgs{"id": vn.Id.String()}).Scan(&vn.Id, &vn.S3_key, &vn.Created_at)
+	if err != nil {
+		return err
 	}
+	return nil
 }
 
 func (db *DbService) CloseDb() {
 	fmt.Println("Closing db connection...")
-	db.session.Close()
+	db.conn.Close(context.Background())
 }

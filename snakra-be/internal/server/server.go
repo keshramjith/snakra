@@ -1,7 +1,7 @@
 package server
 
 import (
-	"log"
+	"go.uber.org/zap"
 	"net/http"
 
 	"github.com/go-chi/cors"
@@ -12,26 +12,24 @@ import (
 )
 
 type Server struct {
-	router      *chi.Mux
-	db          *dbservice.DbService
-	s3client    *s3service.S3Client
-	infoLogger  *log.Logger
-	errorLogger *log.Logger
-	driver      *http.Server
+	router   *chi.Mux
+	db       *dbservice.DbService
+	s3client *s3service.S3Client
+	logger   *zap.SugaredLogger
+	driver   *http.Server
 }
 
-func NewServer(infoLogger, errorLogger *log.Logger, s3bn, addr string) *Server {
+func NewServer(logger *zap.SugaredLogger, s3bn, addr string) *Server {
 	mux := newMux()
 	db := dbservice.NewDbConn()
 	s3Client := s3service.NewS3Client(s3bn)
 	drvSrv := &http.Server{Addr: addr, Handler: mux}
 	srv := &Server{
-		router:      mux,
-		db:          db,
-		s3client:    s3Client,
-		driver:      drvSrv,
-		infoLogger:  infoLogger,
-		errorLogger: errorLogger,
+		router:   mux,
+		db:       db,
+		s3client: s3Client,
+		driver:   drvSrv,
+		logger:   logger,
 	}
 	srv.registerRoutes()
 	return srv

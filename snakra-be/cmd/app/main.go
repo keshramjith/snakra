@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"go.uber.org/zap"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -20,12 +20,12 @@ func main() {
 	// env := os.Getenv("ENV")
 	s3bucketName := os.Getenv("S3_BUCKET")
 
-	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	var logger *zap.SugaredLogger
+	logger = zap.NewExample().Sugar()
 
-	srv := server.NewServer(infoLog, errorLog, s3bucketName, port)
-	infoLog.Printf("Starting server on %s\n", port)
+	srv := server.NewServer(logger, s3bucketName, port)
+	logger.Infof("Starting server on %s", port)
 	err := srv.ListenAndServe()
 	defer srv.CloseDb()
-	errorLog.Fatal(err)
+	logger.Fatal(err)
 }
