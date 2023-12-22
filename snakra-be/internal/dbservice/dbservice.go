@@ -14,7 +14,8 @@ type DbService struct {
 }
 
 func NewDbConn() *DbService {
-	conn, err := pgx.Connect(context.Background(), os.Getenv("DB_HOST"))
+	db_url := os.Getenv("DATABASE_URL")
+	conn, err := pgx.Connect(context.Background(), db_url)
 	if err != nil {
 		fmt.Printf("Error connecting to dbconfig: %s", err)
 		os.Exit(1)
