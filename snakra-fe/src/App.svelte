@@ -10,8 +10,12 @@ import Index from "./pages/Index.svelte";
     <Route path="/">
       <Index />
     </Route>
-    <Route path="/:id" let:params>
-      <Player id="{params.id}"/>
+    <Route path="/:id/*" let:params>
+      <Router>
+        <Route path="/">
+          <Player id="{params.id}"/>
+        </Route>
+      </Router>
     </Route>
     <Route path="/notfound">
       <NotFound />
