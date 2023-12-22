@@ -2,5 +2,8 @@
 .DS_Store
 */.idea/
 
+# ignore tls
+/tls
+
 # ignore env files
 */*.env

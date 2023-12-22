@@ -42,7 +42,7 @@
             const reqBody = {
                 vnString: b64str
             }
-            const resp = await fetch("http://localhost:3001/api/v1/vn", {
+            const resp = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/vn`, {
                 method: "POST",
                 body: JSON.stringify(reqBody)
             })

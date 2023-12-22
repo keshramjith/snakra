@@ -21,7 +21,7 @@
     }
     export let id;
     const getVn = async (id: string) => {
-        const response = await fetch (`http://localhost:3001/api/v1/vn/${id}`)
+        const response = await fetch (`${import.meta.env.VITE_API_URL}/api/v1/vn/${id}`)
         if (response.status == 200) {
             const json = await response.json()
             return json.audio
