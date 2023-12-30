@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { navigate } from "svelte-navigator"
     import Icon from "@iconify/svelte"
+    import { goto } from "$app/navigation"
     let isRecording = false
     let micAccess = false
-    let chunks = []
+    let chunks: any[] = []
     let blob = null
-    let recorder
+    let recorder: MediaRecorder
     let audioSrc
 
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
@@ -47,7 +47,7 @@
                 body: JSON.stringify(reqBody)
             })
             const json = await resp.json()
-            navigate(`/${json.id}`)
+            goto(`/${json.id}`)
         }
     }
 
