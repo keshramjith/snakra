@@ -3,7 +3,7 @@ package server
 import (
 	"encoding/json"
 	"github.com/go-chi/chi/v5"
-	"github.com/gofrs/uuid/v5"
+	"github.com/keshramjith/snakra/internal/id_generation"
 	"io"
 	"net/http"
 	"time"
@@ -25,7 +25,7 @@ type post_request_body struct {
 }
 
 type post_response_body struct {
-	Id string `json:"id"`
+	UrlShortForm string `json:"url_short_form"`
 }
 
 func (s *Server) HandleVoicenoteCreate(w http.ResponseWriter, r *http.Request) {
@@ -36,14 +36,13 @@ func (s *Server) HandleVoicenoteCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var id, generate_uuid_err = uuid.NewV4()
-	if generate_uuid_err != nil {
-		s.logger.Fatalf("failed to generated UUID: %s\n", err)
-	}
+	id, base62 := id_generation.NewId()
+
 	vnEntry := &dbservice.Voicenote{
-		Id:         id,
-		S3_key:     id.String(),
-		Created_at: time.Now(),
+		Id:           id,
+		S3_key:       id.String(),
+		Created_at:   time.Now(),
+		UrlShortForm: base62,
 	}
 
 	s3err := s.s3client.AddObject(requestBody.VnString, vnEntry.Id.String())
@@ -57,7 +56,7 @@ func (s *Server) HandleVoicenoteCreate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	js, err := json.Marshal(&post_response_body{Id: vnEntry.Id.String()})
+	js, err := json.Marshal(&post_response_body{UrlShortForm: vnEntry.UrlShortForm})
 	if err != nil {
 		s.logger.Errorf("Error marshalling json: %s", err)
 	}
@@ -65,15 +64,9 @@ func (s *Server) HandleVoicenoteCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) HandleVoicenoteRead(w http.ResponseWriter, r *http.Request) {
-	pathId := chi.URLParam(r, "id")
+	url_short_form := chi.URLParam(r, "id")
 
-	id, err := uuid.FromString(pathId)
-	if err != nil {
-		s.logger.Errorln("Failed to parse uuid from client")
-		w.WriteHeader(404)
-		return
-	}
-	fetchedVoicenote := &dbservice.Voicenote{Id: id}
+	fetchedVoicenote := &dbservice.Voicenote{UrlShortForm: url_short_form}
 	dbErr := s.db.GetVoicenote(fetchedVoicenote)
 	if dbErr != nil {
 		s.logger.Errorf("Db Error Occured: %s", dbErr)

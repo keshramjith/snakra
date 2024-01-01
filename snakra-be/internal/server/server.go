@@ -35,8 +35,11 @@ func NewServer(logger *zap.SugaredLogger, s3bn, addr string) *Server {
 	return srv
 }
 
-func (s *Server) ListenAndServe() error {
-	return s.driver.ListenAndServeTLS("../tls/cert.pem", "../tls/key.pem")
+func (s *Server) ListenAndServe(env string) error {
+	// if env == "dev" {
+	// 	return s.driver.ListenAndServeTLS("../tls/cert.pem", "../tls/key.pem")
+	// }
+	return s.driver.ListenAndServe()
 }
 
 func (s *Server) CloseDb() {

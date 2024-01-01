@@ -7,7 +7,8 @@ import (
 )
 
 type Voicenote struct {
-	Id         uuid.UUID
-	S3_key     string
-	Created_at time.Time
+	Id           uuid.UUID
+	S3_key       string
+	Created_at   time.Time
+	UrlShortForm string
 }

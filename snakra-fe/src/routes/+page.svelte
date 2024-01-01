@@ -47,7 +47,7 @@
                 body: JSON.stringify(reqBody)
             })
             const json = await resp.json()
-            goto(`/${json.id}`)
+            goto(`/${json.url_short_form}`)
         }
     }
 
