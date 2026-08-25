@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { goto } from "$app/navigation";
 
   const convertURIToBinary = (dataURI: string) => {
@@ -27,18 +27,19 @@
       }
   }
 
-  const setAudio = (binary: Uint8Array) => {
+  const setAudio = (binary: Uint8Array<ArrayBuffer>) => {
       let blob = new Blob([binary], { type: "audio/ogg; codecs=opus" })
       let blobURL = URL.createObjectURL(blob)
       return blobURL
   }
 
-  export let id: string
-
-  id = $page.params.id;
-  console.log(id)
+  const id = $derived(page.params.id);
 </script>
   
-{#await getVn(id) then data }
-    <audio src="{setAudio(convertURIToBinary(data))}" controls/>
-{/await}
+{#if id}
+    {#await getVn(id) then data }
+        <audio src="{setAudio(convertURIToBinary(data))}" controls>
+            <track kind="captions" />
+        </audio>
+    {/await}
+{/if}

@@ -1,12 +1,12 @@
 <script lang="ts">
     import Icon from "@iconify/svelte"
     import { goto } from "$app/navigation"
-    let isRecording = false
-    let micAccess = false
-    let chunks: any[] = []
-    let blob = null
+    let isRecording = $state(false)
+    let micAccess = $state(false)
+    let chunks: Blob[] = []
+    let blob = $state<Blob | null>(null)
     let recorder: MediaRecorder
-    let audioSrc
+    let audioSrc = $state<string | undefined>(undefined)
 
     navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
         recorder = new MediaRecorder(stream)
@@ -53,7 +53,9 @@
 
     const shareButtonHandler = (e: MouseEvent) => {
         e.preventDefault()
-        upload(blob)
+        if (blob) {
+            upload(blob)
+        }
     }
 
     const resetHandler = (e: MouseEvent) => {
@@ -69,16 +71,18 @@
                 <p>Recording</p>
                 <Icon icon="ph:record-fill" width=35 color='red' />
             </div>
-            <button on:click={e => stopRecordingHandler(e)}>Stop</button>
+            <button onclick={e => stopRecordingHandler(e)}>Stop</button>
         {:else}
             {#if blob}
-                <audio src={ audioSrc } controls />
+                <audio src={ audioSrc } controls>
+                    <track kind="captions" />
+                </audio>
                 <div>
-                    <button on:click={e => shareButtonHandler(e)}>Make shareable</button>
-                    <button on:click={e => resetHandler(e)}>Reset</button>
+                    <button onclick={e => shareButtonHandler(e)}>Make shareable</button>
+                    <button onclick={e => resetHandler(e)}>Reset</button>
                 </div>
             {:else}
-                <button on:click={e => startRecordingHandler(e)}>
+                <button onclick={e => startRecordingHandler(e)}>
                     <Icon icon="ph:record-fill" width=35 />
                 </button>
             {/if}

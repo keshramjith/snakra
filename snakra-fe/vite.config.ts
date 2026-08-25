@@ -1,20 +1,17 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import fs from 'fs';
+import fs from 'node:fs';
 
 export default defineConfig({
 	plugins: [sveltekit()],
-	server: function() {
-		if (process.env.NODE_ENV === 'dev') {
-			return {
-				https: {
-					key: fs.readFileSync(`${__dirname}/tls/key.pem`),
-					cert: fs.readFileSync(`${__dirname}/tls/cert.pem`),
-				},
-				proxy: {}
-			}
-		} else {
-			return {}
-		}
-	}()
+	server:
+		process.env.NODE_ENV === 'dev'
+			? {
+					https: {
+						key: fs.readFileSync(`${import.meta.dirname}/tls/key.pem`),
+						cert: fs.readFileSync(`${import.meta.dirname}/tls/cert.pem`)
+					},
+					proxy: {}
+				}
+			: {}
 });
